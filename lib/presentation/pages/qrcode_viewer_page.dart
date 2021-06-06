@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:barcode_image/barcode_image.dart';
 import 'package:image/image.dart' as myImage;
-import 'package:qr_code_scanner/buttons/custom_button_widget.dart';
+import 'package:qr_code_scanner/presentation/buttons/custom_button_widget.dart';
 
 class QRCodeViewerPage extends StatelessWidget {
   QRCodeViewerPage({Key? key}) : super(key: key);
@@ -29,21 +29,17 @@ class QRCodeViewerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final dm = Barcode.qrCode();
-
     final me = MeCard.wifi(
       ssid: 'Wifi Name',
       password: 'password',
     );
 
-    final image = myImage.Image(800, 800);
-    // Fill it with a solid color (white)
+    final image = myImage.Image(600, 600);
+    // // Fill it with a solid color (white)
     myImage.fill(image, myImage.getColor(255, 255, 255));
     drawBarcode(image, Barcode.qrCode(), me.toString(), font: myImage.arial_24);
     final pngImage = myImage.encodePng(image);
-
-    String base64Str = base64.encode(pngImage);
-    Uint8List _image = base64Decode(base64Str);
+    Uint8List _image = base64Decode(base64.encode(pngImage));
 
     return Scaffold(
       // backgroundColor: Colors.amber,

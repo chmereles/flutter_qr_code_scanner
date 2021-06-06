@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/buttons/custom_button_widget.dart';
+import 'package:qr_code_scanner/presentation/buttons/custom_button_widget.dart';
 
 class CustomButtonIconWidget extends StatelessWidget {
   const CustomButtonIconWidget({

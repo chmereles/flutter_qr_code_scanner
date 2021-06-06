@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/pages/qrcode_viewer_page.dart';
+import 'package:qr_code_scanner/presentation/pages/qrcode_viewer_page.dart';
 
 class QRCodeResultPage extends StatelessWidget {
   const QRCodeResultPage({Key? key, required this.codeResult})

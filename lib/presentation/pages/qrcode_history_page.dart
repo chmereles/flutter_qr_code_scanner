@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/buttons/custom_button_icon_widget.dart';
-import 'package:qr_code_scanner/pages/qrcode_result.dart';
+import 'package:qr_code_scanner/presentation/buttons/custom_button_icon_widget.dart';
+import 'package:qr_code_scanner/presentation/pages/qrcode_result.dart';
 
 class QRCodeHistoryPage extends StatelessWidget {
   const QRCodeHistoryPage({Key? key}) : super(key: key);
@@ -9,7 +9,7 @@ class QRCodeHistoryPage extends StatelessWidget {
   final List<String> listCodes = const [
     'wifi',
     'text',
-    'email ñadfjñajdsfdjlkajflkasjfñlkjadsfalksdjflk adsjfñlaksfl ñlakdsfjñlkajdñfljasdlfkjlñadsfj ñlaskdjf lñakdsfjl'
+    'email ñadfjñajdsfdjlkajflkasjfñlkjad'
   ];
 
   @override
@@ -88,23 +88,3 @@ class DayCardHeader extends StatelessWidget {
     );
   }
 }
-
-// class CardHistoryItem extends StatelessWidget {
-//   const CardHistoryItem(
-//       {Key? key, required this.title, this.subtitle, required this.onTap})
-//       : super(key: key);
-
-//   final String title;
-//   final String? subtitle;
-//   final VoidCallback onTap;
-//   @override
-//   Widget build(BuildContext context) {
-//     return CustomButtonIconWidget(
-//       title: title,
-//       subtitle: subtitle,
-//       iconData: Icons.content_copy_outlined,
-//       iconColor: Theme.of(context).primaryColor,
-//       onTap: onTap,
-//     );
-//   }
-// }

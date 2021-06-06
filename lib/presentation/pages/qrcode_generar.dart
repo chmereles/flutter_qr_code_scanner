@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_scanner/buttons/custom_button_icon_widget.dart';
+import 'package:qr_code_scanner/presentation/buttons/custom_button_icon_widget.dart';
 
 class QRCodeGenerar extends StatelessWidget {
   const QRCodeGenerar({Key? key}) : super(key: key);

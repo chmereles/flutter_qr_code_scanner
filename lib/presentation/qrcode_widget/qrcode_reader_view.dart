@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_qr_reader/flutter_qr_reader.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:qr_code_scanner/presentation/cubit/qrcode_cubit.dart';
+import 'package:qr_code_scanner/presentation/widgtes/qr_scanner_widget.dart';
 
 /// Debe haber obtenido los permisos pertinentes antes de su uso.
 /// Relevant privileges must be obtained before use
@@ -12,6 +16,8 @@ class QrcodeReaderView extends StatefulWidget {
   final double scanBoxRatio;
   final Color boxLineColor;
   final Widget? helpWidget;
+  late final Function startScan;
+  late final Function stopScan;
 
   QrcodeReaderView({
     required this.onScan,
@@ -19,6 +25,8 @@ class QrcodeReaderView extends StatefulWidget {
     this.helpWidget,
     this.boxLineColor = Colors.cyanAccent,
     this.scanBoxRatio = 0.85,
+    required this.startScan,
+    required this.stopScan,
   });
 
   @override
@@ -33,6 +41,8 @@ class QrcodeReaderView extends StatefulWidget {
 class QrcodeReaderViewState extends State<QrcodeReaderView>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+
+  //
   QrReaderViewController? _controller;
   AnimationController? _animationController;
   bool openFlashlight = false;
@@ -50,6 +60,10 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
     showScanView();
+
+    // widget.startScan = startScan;
+    widget.stopScan(stopScan);
+    widget.startScan(startScan);
   }
 
   Future showScanView() async {
@@ -143,6 +157,7 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
     isScan = true;
     stopScan();
     await widget.onScan(data);
+    context.read<QrcodeCubit>().codeScanned(data);
   }
 
   void startScan() async {
@@ -162,20 +177,23 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
     return openFlashlight;
   }
 
-  // Future _scanImage() async {
-  // stopScan();
-  // var image = await ImagePicker().getImage(source: ImageSource.gallery);
-  // if (image == null) {
-  //   startScan();
-  //   return;
-  // }
-  // final rest = await FlutterQrReader.imgScan(image.path);
-  // await widget.onScan(rest);
-  // startScan();
-  // }
+  Future _scanImage() async {
+    stopScan();
+    // var image = await ImagePicker().getImage(source: ImageSource.gallery);
+    // if (image == null) {
+    //   startScan();
+    //   return;
+    // }
+    // final rest = await FlutterQrReader.imgScan(image.path);
+    final rest = await Future.value('CAMBIAR POR UN VEDADERO CODIGO QR');
+    await widget.onScan(rest);
+    context.read<QrcodeCubit>().codeScanned(rest);
+    startScan();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Si no esta iniciado, mostrar pantalla negra
     if (_init == false) {
       return Scaffold(
         backgroundColor: Colors.black,
@@ -184,6 +202,7 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
         ),
       );
     }
+    // Mostrar los permisos??
     if (_showPermission) {
       return Scaffold(
         backgroundColor: Colors.black,
@@ -282,6 +301,7 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
         ),
       );
     }
+
     // final flashOpen = Image.asset(
     //   "assets/tool_flashlight_open.png",
     //   package: "flutter_qr_reader",
@@ -296,124 +316,88 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
     //   height: 35,
     //   color: Colors.white,
     // );
+
+    // Si todo ok, mostrar pantalla de scanner
     return Material(
       color: Colors.black,
-      child: LayoutBuilder(builder: (context, constraints) {
-        final qrScanSize = constraints.maxWidth * widget.scanBoxRatio;
-        // final mediaQuery = MediaQuery.of(context);
-        if (constraints.maxHeight < qrScanSize * 1.5) {
-          print(
-            "La relación entre la altura recomendada y la altura del área de escaneo es superior a 1,5",
-          );
-        }
-        return Stack(
-          children: <Widget>[
-            SizedBox(
-              width: constraints.maxWidth,
-              height: constraints.maxHeight,
-              child: _showScanView
-                  ? QrReaderView(
-                      width: constraints.maxWidth,
-                      height: constraints.maxHeight,
-                      callback: _onCreateController,
-                    )
-                  : Container(),
-            ),
-            if (widget.headerWidget != null) widget.headerWidget!,
-            Positioned(
-              left: (constraints.maxWidth - qrScanSize) / 2,
-              top: (constraints.maxHeight - qrScanSize) * 0.333333,
-              child: CustomPaint(
-                painter: QrScanBoxPainter(
-                  boxLineColor: widget.boxLineColor,
-                  animationValue: _animationController?.value ?? 0,
-                  // animationValue: 0,
-                  isForward:
-                      _animationController?.status == AnimationStatus.forward,
-                ),
-                child: SizedBox(
-                  width: qrScanSize,
-                  height: qrScanSize,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final qrScanSize = constraints.maxWidth * widget.scanBoxRatio;
+          // final mediaQuery = MediaQuery.of(context);
+          if (constraints.maxHeight < qrScanSize * 1.5) {
+            print(
+              "La relación entre la altura recomendada y la altura del área de escaneo es superior a 1,5",
+            );
+          }
+
+          //
+          return Stack(
+            children: <Widget>[
+              // QR Reader View
+              SizedBox(
+                width: constraints.maxWidth,
+                height: constraints.maxHeight,
+                child: _showScanView
+                    ? QrReaderView(
+                        width: constraints.maxWidth,
+                        height: constraints.maxHeight,
+                        callback: _onCreateController,
+                        // callback: widget.callback,
+                      )
+                    : Container(),
+              ),
+
+              // Header (opcioneal)
+              if (widget.headerWidget != null) widget.headerWidget!,
+
+              // QR Cuadro scanner
+              Positioned(
+                left: (constraints.maxWidth - qrScanSize) / 2,
+                top: (constraints.maxHeight - qrScanSize) * 0.333333,
+                child: CustomPaint(
+                  painter: QrScanBoxPainter(
+                    boxLineColor: widget.boxLineColor,
+                    animationValue: _animationController?.value ?? 0,
+                    // animationValue: 0,
+                    isForward:
+                        _animationController?.status == AnimationStatus.forward,
+                  ),
+                  child: SizedBox(
+                    width: qrScanSize,
+                    height: qrScanSize,
+                  ),
                 ),
               ),
-            ),
-            // Positioned(
-            //   top: (constraints.maxHeight - qrScanSize) * 0.333333 +
-            //       qrScanSize +
-            //       24,
-            //   width: constraints.maxWidth,
-            //   child: Align(
-            //     alignment: Alignment.center,
-            //     child: DefaultTextStyle(
-            //       style: TextStyle(color: Colors.white),
-            //       child:
-            //           widget.helpWidget ?? Text("Pon el código QR en la caja."),
-            //     ),
-            //   ),
-            // ),
-            // Positioned(
-            //   top: (constraints.maxHeight - qrScanSize) * 0.333333 +
-            //       qrScanSize -
-            //       12 -
-            //       35,
-            //   width: constraints.maxWidth,
-            //   child: Align(
-            //     alignment: Alignment.center,
-            //     child: GestureDetector(
-            //       behavior: HitTestBehavior.translucent,
-            //       onTap: setFlashlight,
-            //       child: openFlashlight ? flashOpen : flashClose,
-            //     ),
-            //   ),
-            // ),
-            // Positioned(
-            //   width: constraints.maxWidth,
-            //   bottom: constraints.maxHeight == mediaQuery.size.height
-            //       ? 12 + mediaQuery.padding.top
-            //       : 12,
-            //   child: Row(
-            //     crossAxisAlignment: CrossAxisAlignment.center,
-            //     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //     children: <Widget>[
-            //       GestureDetector(
-            //         behavior: HitTestBehavior.translucent,
-            //         onTap: _scanImage,
-            //         child: Container(
-            //           width: 45,
-            //           height: 45,
-            //           alignment: Alignment.center,
-            //           child: Image.asset(
-            //             "assets/tool_img.png",
-            //             package: "flutter_qr_reader",
-            //             width: 25,
-            //             height: 25,
-            //             color: Colors.white54,
-            //           ),
-            //         ),
-            //       ),
-            //       Container(
-            //         width: 80,
-            //         height: 80,
-            //         decoration: BoxDecoration(
-            //           borderRadius: BorderRadius.all(Radius.circular(40)),
-            //           border: Border.all(color: Colors.white30, width: 12),
-            //         ),
-            //         alignment: Alignment.center,
-            //         child: Image.asset(
-            //           "assets/tool_qrcode.png",
-            //           package: "flutter_qr_reader",
-            //           width: 35,
-            //           height: 35,
-            //           color: Colors.white54,
-            //         ),
-            //       ),
-            //       SizedBox(width: 45, height: 45),
-            //     ],
-            //   ),
-            // )
-          ],
-        );
-      }),
+
+              Positioned(
+                top: (constraints.maxHeight - qrScanSize) * 0.333333 +
+                    qrScanSize +
+                    50,
+                width: constraints.maxWidth,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: ZoomSliderWidget(),
+                ),
+              ),
+
+              Positioned(
+                //TODO centrar la barra de herramientas
+                top: (constraints.maxHeight - qrScanSize) * 0.333333 +
+                    qrScanSize +
+                    110,
+                width: constraints.maxWidth,
+                child: Align(
+                  alignment: Alignment.center,
+                  child: QRToolBarWidget(
+                    onFlashLigthTap: setFlashlight,
+                    onImageTap: _scanImage,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -517,4 +501,61 @@ class QrScanBoxPainter extends CustomPainter {
   @override
   bool shouldRebuildSemantics(QrScanBoxPainter oldDelegate) =>
       animationValue != oldDelegate.animationValue;
+}
+
+class QRToolBarWidget extends StatelessWidget {
+  const QRToolBarWidget({
+    Key? key,
+    required this.onFlashLigthTap,
+    required this.onImageTap,
+  }) : super(key: key);
+
+  final VoidCallback onFlashLigthTap;
+  final VoidCallback onImageTap;
+
+  @override
+  Widget build(BuildContext context) {
+    //
+    final _size = MediaQuery.of(context).size;
+    final _toolBarColor = Theme.of(context).primaryColor;
+    final _iconColor = Colors.white;
+    final _iconSlectedColor = Colors.yellow;
+    final _isFlashOn = false;
+    final _isMultiScan = false;
+
+    return SizedBox(
+      width: _size.width * 0.7,
+      child: Material(
+        color: _toolBarColor,
+        borderRadius: BorderRadius.circular(30),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.image_outlined,
+                color: _iconColor,
+              ),
+              // onPressed: () {},
+              onPressed: onImageTap,
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.flash_on,
+                color: _isFlashOn ? _iconSlectedColor : _iconColor,
+              ),
+              onPressed: onFlashLigthTap,
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.copy_all_outlined,
+                color: _isMultiScan ? _iconSlectedColor : _iconColor,
+              ),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_code_scanner/presentation/code_reader/cubit/code_reader_cubit.dart';
+import 'package:qr_code_scanner/presentation/code_reader/widgets/code_reader_view.dart';
 
 import 'package:qr_code_scanner/presentation/pages/qrcode_generar.dart';
 import 'package:qr_code_scanner/presentation/pages/qrcode_history_page.dart';
-import 'package:qr_code_scanner/presentation/pages/qrcode_result.dart';
+import 'package:qr_code_scanner/presentation/code_reader/views/code_result_page.dart';
 import 'package:qr_code_scanner/presentation/pages/qrcode_viewer_page.dart';
-import 'package:qr_code_scanner/presentation/qrcode_widget/qrcode_reader_view.dart';
 
-class QrRaderMainPage extends StatefulWidget {
+class CodeReaderPage extends StatefulWidget {
   @override
-  _QrRaderMainPageState createState() => _QrRaderMainPageState();
+  _CodeReaderPageState createState() => _CodeReaderPageState();
 }
 
-class _QrRaderMainPageState extends State<QrRaderMainPage> {
+class _CodeReaderPageState extends State<CodeReaderPage> {
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool _showScanView = false;
-
-  late Function myStopScan;
-  late Function myStartScan;
 
   @override
   void initState() {
@@ -29,25 +28,27 @@ class _QrRaderMainPageState extends State<QrRaderMainPage> {
         .showSnackBar(SnackBar(content: Text(tip)));
   }
 
-  void showResultPage(String result) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => QRCodeResultPage(codeResult: result),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
+    return BlocListener<CodeReaderCubit, CodeReaderState>(
+      listener: (context, state) {
+        //
+        if (state is CodeReaderScanned) {
+          // print('${state.code}');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QRCodeResultPage(code: state.code),
+            ),
+          );
+        }
+      },
+      child: Scaffold(
         backgroundColor: Colors.grey,
         key: scaffoldKey,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          // title: Text('la'),
           actions: [
             IconButton(
               onPressed: () {
@@ -59,19 +60,13 @@ class _QrRaderMainPageState extends State<QrRaderMainPage> {
             ),
             IconButton(
               onPressed: () {
-                myStartScan();
-                // setState(() {
-                //   _showScanView = !_showScanView;
-                // });
+                context.read<CodeReaderCubit>().startScan();
               },
               icon: Icon(Icons.play_arrow),
             ),
             IconButton(
               onPressed: () {
-                myStopScan();
-                // setState(() {
-                //   _showScanView = !_showScanView;
-                // });
+                context.read<CodeReaderCubit>().stopScan();
               },
               icon: Icon(Icons.stop),
             ),
@@ -82,17 +77,8 @@ class _QrRaderMainPageState extends State<QrRaderMainPage> {
             return _showScanView == true
                 ?
                 //
-                QrcodeReaderView(
+                CodeReaderView(
                     headerWidget: null,
-                    stopScan: (fun) {
-                      this.myStopScan = fun;
-                    },
-                    startScan: (fun) {
-                      this.myStartScan = fun;
-                    },
-                    onScan: (String result) async {
-                      showResultPage(result);
-                    },
                   )
                 : Container();
           },
@@ -126,7 +112,6 @@ class _QrRaderMainPageState extends State<QrRaderMainPage> {
                 ),
               );
             } else {
-              myStopScan();
               Navigator.push(
                 context,
                 MaterialPageRoute(

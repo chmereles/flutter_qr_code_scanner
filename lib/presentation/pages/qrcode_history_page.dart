@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/presentation/buttons/custom_button_icon_widget.dart';
-import 'package:qr_code_scanner/presentation/pages/qrcode_result.dart';
+import 'package:qr_code_scanner/presentation/code_reader/views/code_result_page.dart';
 
 class QRCodeHistoryPage extends StatelessWidget {
   const QRCodeHistoryPage({Key? key}) : super(key: key);
@@ -48,15 +48,14 @@ class QRCodeHistoryPage extends StatelessWidget {
                     subtitle: 'dfadfad',
                     iconData: Icons.wifi_outlined,
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => QRCodeResultPage(
-                              // codeResult: 'dafadf',
-                              codeResult:
-                                  'https://www.afip.gob.ar/fe/qr/?p=eycndmVyJyc6MSwnJ2ZlY2hhJyc6JycyMDIxLTA1LTEwJycsJydjdWl0Jyc6MzA2ODU4ODkzOTcsJydwdG9WdGEnJzowMDMxLCcndGlwb0NtcCcnOjA2LCcnbnJvQ21wJyc6OTMyNzgyNzMsJydpbXBvcnRlJyc6NDU0NSwnJ21vbmVkYScnOicnUEVTJycsJydjdHonJzoxLCcndGlwb0RvY1JlYycnOiwnJ25yb0RvY1JlYycnOiwnJ3RpcG9Db2RBdXQnJzonJ0InJywnJ2NvZEF1dCcnOjcxMTk3OTc4NTQyMTk4fQ== https://www.afip.gob.ar/fe/qr/?p=eycndmVyJyc6MSwnJ2ZlY2hhJyc6JycyMDIxLTA1LTEwJycsJydjdWl0Jyc6MzA2ODU4ODkzOTcsJydwdG9WdGEnJzowMDMxLCcndGlwb0NtcCcnOjA2LCcnbnJvQ21wJyc6OTMyNzgyNzMsJydpbXBvcnRlJyc6NDU0NSwnJ21vbmVkYScnOicnUEVTJycsJydjdHonJzoxLCcndGlwb0RvY1JlYycnOiwnJ25yb0RvY1JlYycnOiwnJ3RpcG9Db2RBdXQnJzonJ0InJywnJ2NvZEF1dCcnOjcxMTk3OTc4NTQyMTk4fQ=='),
-                        ),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //     builder: (context) => QRCodeResultPage(
+                      //         // codeResult: 'dafadf',
+                      //         code: 'https://www.afip.gob.ar/fe/d=='),
+                      //   ),
+                      // );
                     },
                   )
               ],

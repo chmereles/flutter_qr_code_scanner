@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:qr_code_scanner/presentation/cubit/qrcode_cubit.dart';
-import 'package:qr_code_scanner/presentation/qrcode_widget/qr_reader_main_page.dart';
+import 'package:qr_code_scanner/presentation/code_reader/cubit/code_reader_cubit.dart';
+import 'package:qr_code_scanner/presentation/code_reader/views/code_reader_page.dart';
 import 'package:qr_code_scanner/theme_utils.dart';
 
 void main() {
@@ -16,15 +16,15 @@ class MyApp extends StatelessWidget {
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark));
 
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: ThemeMode.dark,
-      // themeMode: ThemeMode.light,
-      home: BlocProvider(
-        create: (context) => QrcodeCubit(),
-        child: QrRaderMainPage(),
+    return BlocProvider(
+      create: (context) => CodeReaderCubit()..start(),
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: ThemeMode.dark,
+        // themeMode: ThemeMode.light,
+        home: CodeReaderPage(),
       ),
     );
   }

@@ -5,32 +5,27 @@ import 'package:flutter_qr_reader/flutter_qr_reader.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:qr_code_scanner/presentation/cubit/qrcode_cubit.dart';
-import 'package:qr_code_scanner/presentation/widgtes/qr_scanner_widget.dart';
+import 'package:qr_code_scanner/presentation/code_reader/cubit/code_reader_cubit.dart';
 
 /// Debe haber obtenido los permisos pertinentes antes de su uso.
 /// Relevant privileges must be obtained before use
-class QrcodeReaderView extends StatefulWidget {
+class CodeReaderView extends StatefulWidget {
   final Widget? headerWidget;
-  final Future Function(String) onScan;
+  // final Future Function(String) onScan;
   final double scanBoxRatio;
   final Color boxLineColor;
   final Widget? helpWidget;
-  late final Function startScan;
-  late final Function stopScan;
 
-  QrcodeReaderView({
-    required this.onScan,
+  CodeReaderView({
+    // required this.onScan,
     required this.headerWidget,
     this.helpWidget,
     this.boxLineColor = Colors.cyanAccent,
     this.scanBoxRatio = 0.85,
-    required this.startScan,
-    required this.stopScan,
   });
 
   @override
-  QrcodeReaderViewState createState() => new QrcodeReaderViewState();
+  CodeReaderViewState createState() => new CodeReaderViewState();
 }
 
 /// Operaciones de seguimiento después de escanear el código
@@ -38,12 +33,12 @@ class QrcodeReaderView extends StatefulWidget {
 /// GlobalKey<QrcodeReaderViewState> qrViewKey = GlobalKey();
 /// qrViewKey.currentState.startScan();
 /// ```
-class QrcodeReaderViewState extends State<QrcodeReaderView>
+class CodeReaderViewState extends State<CodeReaderView>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
   //
-  QrReaderViewController? _controller;
+  // QrReaderViewController? _controller;
   AnimationController? _animationController;
   bool openFlashlight = false;
   Timer? _timer;
@@ -60,10 +55,6 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
     showScanView();
-
-    // widget.startScan = startScan;
-    widget.stopScan(stopScan);
-    widget.startScan(startScan);
   }
 
   Future showScanView() async {
@@ -146,8 +137,10 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
   }
 
   void _onCreateController(QrReaderViewController controller) async {
-    _controller = controller;
-    startScan();
+    // _controller = controller;
+    // startScan();
+
+    context.read<CodeReaderCubit>().onCreateController(controller);
   }
 
   bool isScan = false;
@@ -156,28 +149,29 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
     if (isScan == true) return;
     isScan = true;
     stopScan();
-    await widget.onScan(data);
-    context.read<QrcodeCubit>().codeScanned(data);
+    // await widget.onScan(data);
+    context.read<CodeReaderCubit>().codeScanned(data);
   }
 
   void startScan() async {
     isScan = false;
-    await _controller?.startCamera(_onQrBack);
+    // await _controller?.startCamera(_onQrBack);
     _initAnimation();
   }
 
   void stopScan() {
-    _controller?.stopCamera();
+    // _controller?.stopCamera();
     _clearAnimation();
   }
 
   Future<bool> setFlashlight() async {
-    openFlashlight = await _controller?.setFlashlight() ?? false;
+    // openFlashlight = await _controller?.setFlashlight() ?? false;
     setState(() {});
     return openFlashlight;
   }
 
   Future _scanImage() async {
+    /*
     stopScan();
     // var image = await ImagePicker().getImage(source: ImageSource.gallery);
     // if (image == null) {
@@ -185,10 +179,15 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
     //   return;
     // }
     // final rest = await FlutterQrReader.imgScan(image.path);
-    final rest = await Future.value('CAMBIAR POR UN VEDADERO CODIGO QR');
-    await widget.onScan(rest);
-    context.read<QrcodeCubit>().codeScanned(rest);
-    startScan();
+    final rest =
+        // await Future.value('WIFI:S:Zhone_DB01;T:WPA;P:znid311655937;H:false;');
+        // await Future.value('tel:3834684050');
+        await Future.value('begin:vcalendar');
+    // await widget.onScan(rest);
+    context.read<CodeReaderCubit>().codeScanned(rest);
+    // startScan();
+  */
+    context.read<CodeReaderCubit>().scanImage();
   }
 
   @override
@@ -301,21 +300,6 @@ class QrcodeReaderViewState extends State<QrcodeReaderView>
         ),
       );
     }
-
-    // final flashOpen = Image.asset(
-    //   "assets/tool_flashlight_open.png",
-    //   package: "flutter_qr_reader",
-    //   width: 35,
-    //   height: 35,
-    //   color: Colors.white,
-    // );
-    // final flashClose = Image.asset(
-    //   "assets/tool_flashlight_close.png",
-    //   package: "flutter_qr_reader",
-    //   width: 35,
-    //   height: 35,
-    //   color: Colors.white,
-    // );
 
     // Si todo ok, mostrar pantalla de scanner
     return Material(
@@ -556,6 +540,108 @@ class QRToolBarWidget extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class ZoomSliderWidget extends StatefulWidget {
+  const ZoomSliderWidget({Key? key}) : super(key: key);
+
+  @override
+  _ZoomSliderWidgetState createState() => _ZoomSliderWidgetState();
+}
+
+class _ZoomSliderWidgetState extends State<ZoomSliderWidget> {
+  var valueSlider = 0.0;
+  final sliderStep = 0.05;
+  final sliderMin = 0.0;
+  final sliderMax = 1.0;
+
+  void changeSlideValue(double step) {
+    valueSlider = valueSlider + step;
+    //
+    if (valueSlider < sliderMin) {
+      valueSlider = sliderMin;
+    }
+    //
+    else if (valueSlider > sliderMax) {
+      valueSlider = sliderMax;
+    }
+
+    setState(() {});
+  }
+
+  void incSliderValue() {
+    changeSlideValue(sliderStep);
+  }
+
+  void decSliderValue() {
+    changeSlideValue(sliderStep * -1);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    //
+    final size = MediaQuery.of(context).size;
+    final _iconColor = Colors.white;
+    final _color = Theme.of(context).primaryColor;
+    final _inactivColor = Colors.grey[400];
+
+    return
+        // Align(
+        //   alignment: Alignment(0, 0.7),
+        //   child:
+        Container(
+      // width: size.width * 0.9,
+      height: 50,
+      // color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Icono menos
+          GestureDetector(
+            onTap: decSliderValue,
+            child: Icon(
+              Icons.remove,
+              color: _iconColor,
+            ),
+          ),
+
+          // Slider
+          SizedBox(
+            width: size.width * 0.7,
+            child: SliderTheme(
+              data: SliderTheme.of(context).copyWith(
+                trackHeight: 2.0,
+                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 7.0),
+              ),
+              child: Slider(
+                min: sliderMin,
+                max: sliderMax,
+                value: valueSlider,
+                inactiveColor: _inactivColor,
+                activeColor: _color,
+                onChanged: (double value) {
+                  print(value);
+                  setState(() {
+                    valueSlider = value;
+                  });
+                },
+              ),
+            ),
+          ),
+
+          // Icono mas
+          GestureDetector(
+            onTap: incSliderValue,
+            child: Icon(
+              Icons.add,
+              color: _iconColor,
+            ),
+          ),
+        ],
+      ),
+      // ),
     );
   }
 }
